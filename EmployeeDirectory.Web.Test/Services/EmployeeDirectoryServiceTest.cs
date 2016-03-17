@@ -90,5 +90,13 @@ namespace EmployeeDirectory.Web.Test.Services
             AssertEmployeeListContains("Joe Programmer", results);
             AssertEmployeeListContains("Sally Programmer", results);
         }
+
+        [TestMethod]
+        public async Task EmployeeDirectoryService_FindByNamePartialAsync_should_return_empty_for_unknown()
+        {
+            var results = await FindByNamePartial("unknown");
+            Assert.AreEqual(0, results.Count);
+        }
+
     }
 }

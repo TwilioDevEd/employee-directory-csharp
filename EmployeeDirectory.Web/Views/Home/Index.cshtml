@@ -19,5 +19,13 @@
             <span>@firstEmployee.FullName</span>
         </div>
     }
+
+    <div>
+        <form action="/Employee/Lookup" method="post">
+            <input type="hidden" name="body" value="David"/>
+            <input type="hidden" name="from" value="+15555555555" />
+            <input type="submit"/>
+        </form>
+    </div>
 </body>
 </html>

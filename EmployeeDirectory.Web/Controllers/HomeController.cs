@@ -15,7 +15,7 @@ namespace EmployeeDirectory.Web.Controllers
                 var service = new EmployeeDirectoryService(context);
                 ViewBag.FirstEmployee = await service.FindByIdAsync(1);
             }
-                
+
             return View();
         }
     }
