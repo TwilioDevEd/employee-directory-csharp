@@ -1,0 +1,23 @@
+﻿@{
+    Layout = null;
+    var firstEmployee = (ViewBag.FirstEmployee as EmployeeDirectory.Web.Models.Employee);
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+</head>
+<body>
+    <h1>Employee Directory</h1>
+    @if(firstEmployee != null)
+    {
+        <div>
+            <label>First Employee:</label>
+            <span>@firstEmployee.FullName</span>
+        </div>
+    }
+</body>
+</html>
