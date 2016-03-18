@@ -8,7 +8,7 @@ namespace EmployeeDirectory.Web.Models
 {
     public class EmployeeDbContext : DbContext
     {
-        public EmployeeDbContext() : base()
+        public EmployeeDbContext() : base("DefaultConnection")
         {
             Database.SetInitializer(new EmployeeDbInitializer());
         }
