@@ -1,40 +1,33 @@
-﻿using Newtonsoft.Json;
+﻿using System.Configuration;
 using System.Data.Entity;
-using System.Data.Entity.Migrations;
-using System.IO;
-using System.Web;
+using EmployeeDirectory.Web.Models.Sqlite;
+using EmployeeDirectory.Web.Models.SqlServer;
 
 namespace EmployeeDirectory.Web.Models
 {
     public class EmployeeDbContext : DbContext
     {
-        public EmployeeDbContext() : base("DefaultConnection")
+        private const string ConnectionStringName = "DefaultConnection";
+
+        public EmployeeDbContext() : base(ConnectionStringName)
         {
-            Database.SetInitializer(new EmployeeDbInitializer());
+        }
+
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+            // Use the correct initializer will be used based on the providerName
+            // for the 'DefaultConnection' connectionString.
+            var cs = ConfigurationManager.ConnectionStrings[ConnectionStringName];
+            if (cs.ProviderName == "System.Data.SQLite")
+            {
+                Database.SetInitializer(new EmployeeDbSqliteInitializer(modelBuilder));
+            }
+            else
+            {
+                Database.SetInitializer(new EmployeeDbSqlServerInitializer());
+            }
         }
 
         public virtual DbSet<Employee> Employees { get; set; }
-    }
-
-    class EmployeeDbInitializer : CreateDatabaseIfNotExists<EmployeeDbContext>
-    {
-        protected override void Seed(EmployeeDbContext context)
-        {
-            base.Seed(context);
-            context.Employees.AddOrUpdate(e => e.Id, new Employee { Id = 1, FullName = "David Prothero", Email = "dprothero@twilio.com", PhoneNumber = "+14155551212", ImageUrl = "http://gravatar.com/avatar/560630d6945c6a8777533e7ea3b4e69b?s=200" });
-
-            // Data provided by Marvel. © 2016 MARVEL
-            var seedDataPath = HttpContext.Current?.Server.MapPath("~/App_Data/seed-data.json");
-            if(!string.IsNullOrEmpty(seedDataPath) && File.Exists(seedDataPath))
-            {
-                var exampleRecords = JsonConvert.DeserializeObject<Employee[]>(File.ReadAllText(seedDataPath));
-                foreach(var record in exampleRecords)
-                {
-                    context.Employees.AddOrUpdate(e => e.Id, record);
-                }
-            }
-
-            context.SaveChanges();
-        }
     }
 }

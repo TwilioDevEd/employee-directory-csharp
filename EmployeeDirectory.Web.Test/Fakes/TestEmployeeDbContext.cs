@@ -11,12 +11,12 @@ namespace EmployeeDirectory.Web.Test.Fakes
     {
         public static EmployeeDbContext GetTestDbContext(IList<Employee> sampleData = null)
         {
-            var data = sampleData?.AsQueryable() ?? new List<Employee>
+            var data = (sampleData ?? new List<Employee>
             {
                 new Employee { Id = 1, FullName = "Joe Programmer", Email = "joe@example.com", ImageUrl = "http://example.com/joe.png", PhoneNumber = "12345678901" },
                 new Employee { Id = 2, FullName = "Sally Programmer", Email = "sally@example.com", ImageUrl = "http://example.com/sally.png", PhoneNumber = "12345678902" },
                 new Employee { Id = 3, FullName = "Code Monkey", Email = "monkey@example.com", ImageUrl = "http://example.com/monkey.png", PhoneNumber = "12345678903" }
-            }.AsQueryable();
+            }).AsQueryable();
 
             var mockSet = new Mock<DbSet<Employee>>();
             mockSet.As<IDbAsyncEnumerable<Employee>>()

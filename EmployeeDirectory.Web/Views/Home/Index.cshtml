@@ -8,10 +8,10 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width" />
-    <title></title>
+    <title>Employee Directory App</title>
 </head>
 <body>
-    <h1>Employee Directory</h1>
+    <h1>Employee Directory App</h1>
     @if(firstEmployee != null)
     {
         <div>
@@ -22,9 +22,9 @@
 
     <div>
         <form action="/Employee/Lookup" method="post">
-            <input type="hidden" name="body" value="David"/>
+            <input type="text" name="body" value="David"/>
             <input type="hidden" name="from" value="+15555555555" />
-            <input type="submit"/>
+            <input type="submit" name="submit" value="Go"/>
         </form>
     </div>
 </body>

@@ -1,13 +1,14 @@
-﻿using EmployeeDirectory.Web.Models;
-using EmployeeDirectory.Web.Services;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
+using EmployeeDirectory.Web.Models;
+using EmployeeDirectory.Web.Services;
 using Twilio.Mvc;
 using Twilio.TwiML;
 using Twilio.TwiML.Mvc;
-using System.Collections.Generic;
-using System;
 
 namespace EmployeeDirectory.Web.Controllers
 {
@@ -15,95 +16,124 @@ namespace EmployeeDirectory.Web.Controllers
     {
         public const string NotFoundMessage = "We could not find an employee matching '{0}'";
         public const string CookieName = "EmpDirIdList";
-        private EmployeeDirectoryService _service;
+        private readonly EmployeeDirectoryService _service;
 
-        public EmployeeController() : base()
+        public EmployeeController()
         {
             _service = new EmployeeDirectoryService(new EmployeeDbContext());
         }
 
-        public EmployeeController(EmployeeDirectoryService service) : base()
+        public EmployeeController(EmployeeDirectoryService service)
         {
             _service = service;
         }
 
-        // POST: Employee/Lookup
+        // Twilio will call this whenever our phone # receives an SMS message.
         [HttpPost]
         public async Task<ActionResult> Lookup(SmsRequest request)
         {
-            IEnumerable<Employee> employees = new List<Employee>();
+            var incomingMessageText = request.Body;
 
-            var num = ParseNumber(request.Body);
-            var keys = Request.Cookies.Get(CookieName)?.Value?.Split('~');
-            if (num > 0 && keys != null && num <= keys.Length)
-            {
-                var id = ParseNumber(keys[num - 1]);
-                var employee = await _service.FindByIdAsync(id);
-                if (employee != null) employees = new[] { employee };
-            }
-            else
-            {
-                employees = await _service.FindByNamePartialAsync(request.Body);
-            }
+            var employees = await GetEmployeesIfNumericInput(incomingMessageText) ??
+                            await _service.FindByNamePartialAsync(incomingMessageText);
 
-            var response = GetTwilioResponseForEmployees(employees.ToList(), request.Body);
+            var response = GetTwilioResponseForEmployees(employees, incomingMessageText);
             return new TwiMLResult(response);
         }
 
-        private int ParseNumber(string body)
+        private async Task<IEnumerable<Employee>> GetEmployeesIfNumericInput(string incomingMessageText)
         {
-            int value;
-            if(int.TryParse(body, out value))
+            var num = ParseNumber(incomingMessageText);
+            var keys = GetListOfKeysFromCookie();
+
+            if (IsNumberAndInListOfKeys(num, keys))
             {
-                return value;
+                return await GetListOfOneEmployeeById(keys, num);
             }
-            return 0;
+
+            return null;
         }
 
-        private TwilioResponse GetTwilioResponseForEmployees(List<Employee> employees, string body)
+        private static int ParseNumber(string incomingMessageText)
+        {
+            int value;
+            return int.TryParse(incomingMessageText, out value) ? value : 0;
+        }
+
+        private string[] GetListOfKeysFromCookie()
+        {
+            var cookie = Request.Cookies.Get(CookieName);
+            if (cookie == null || cookie.Value == null) return null;
+            return cookie.Value.Split('~');
+        }
+
+        private static bool IsNumberAndInListOfKeys(int num, IReadOnlyList<string> keys)
+        {
+            return num > 0 && keys != null && num <= keys.Count;
+        }
+
+        private async Task<IEnumerable<Employee>> GetListOfOneEmployeeById(IReadOnlyList<string> keys, int num)
+        {
+            var id = ParseNumber(keys[num - 1]);
+            var employee = await _service.FindByIdAsync(id);
+            return employee == null ? null : ConvertToArray(employee);
+        }
+
+        private static IEnumerable<Employee> ConvertToArray(Employee employee)
+        {
+            return new [] { employee };
+        }
+
+        private TwilioResponse GetTwilioResponseForEmployees(IEnumerable<Employee> employees, string incomingMessageText)
         {
             var response = new TwilioResponse();
+            var employeeList = employees.ToList();
 
-            switch (employees.Count)
+            switch (employeeList.Count)
             {
-                case 0:
-                    response.Message(string.Format(NotFoundMessage, body));
+                case 0: // No Employees Found
+                    response.Message(string.Format(NotFoundMessage, incomingMessageText));
                     break;
 
-                case 1:
-                    var employee = employees.First();
-                    response.Message(employee.FullName + " - " + employee.Email + " - " + employee.PhoneNumber, new string[] { employee.ImageUrl }, null);
+                case 1: // A Single Employee Found
+                    var employee = employeeList.First();
+                    response.Message(employee.FullName + " - " + employee.Email + " - " + employee.PhoneNumber,
+                        new[] {employee.ImageUrl}, null);
                     break;
 
-                default:
-                    response.Message(GetMessageForMultipleEmployees(employees));
+                default: // Multiple Employees Found
+                    response.Message(GetMessageForMultipleEmployees(employeeList));
                     break;
             }
 
             return response;
         }
 
-        private string GetMessageForMultipleEmployees(List<Employee> employees)
+        private string GetMessageForMultipleEmployees(IReadOnlyList<Employee> employees)
         {
             var msg = "We found: ";
             var idList = "";
             for (var i = 0; i < employees.Count; i++)
             {
-                msg += (i+1) + "-" + employees[i].FullName;
+                msg += i + 1 + "-" + employees[i].FullName;
                 idList += employees[i].Id;
-                if (i < employees.Count - 1)
-                {
-                    msg += ", ";
-                    idList += "~";
-                }
+                if (i == employees.Count - 1) continue;
+                msg += ", ";
+                idList += "~";
             }
             msg += " - Reply with # of desired person";
 
-            var cookie = new System.Web.HttpCookie(CookieName, idList);
-            cookie.Expires = DateTime.UtcNow.AddDays(1);
-            Response.Cookies.Add(cookie);
-
+            AddListOfIdsCookie(idList);
             return msg;
+        }
+
+        private void AddListOfIdsCookie(string idList)
+        {
+            var cookie = new HttpCookie(CookieName, idList)
+            {
+                Expires = DateTime.UtcNow.AddHours(4)
+            };
+            Response.Cookies.Add(cookie);
         }
     }
 }
