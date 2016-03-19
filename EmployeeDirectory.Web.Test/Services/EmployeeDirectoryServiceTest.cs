@@ -82,6 +82,13 @@ namespace EmployeeDirectory.Web.Test.Services
         }
 
         [TestMethod]
+        public async Task EmployeeDirectoryService_FindByNamePartialAsync_should_return_monkey_for_last_name_lowercase()
+        {
+            var results = await FindByNamePartial("monkey");
+            AssertEmployeeListOnlyContains("Code Monkey", results);
+        }
+
+        [TestMethod]
         public async Task EmployeeDirectoryService_FindByNamePartialAsync_should_return_programmers_for_last_name()
         {
             var results = await FindByNamePartial("Programmer");

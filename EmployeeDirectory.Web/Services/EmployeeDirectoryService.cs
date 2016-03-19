@@ -17,8 +17,9 @@ namespace EmployeeDirectory.Web.Services
 
         public async Task<IEnumerable<Employee>> FindByNamePartialAsync(string partialName)
         {
+            partialName = partialName.ToLower();
             return await _context.Employees
-                .Where(e => e.FullName.Contains(partialName))
+                .Where(e => e.FullName.ToLower().Contains(partialName))
                 .ToListAsync();
         }
 

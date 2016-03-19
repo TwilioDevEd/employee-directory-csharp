@@ -11,6 +11,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{C110B907-9AC5-4373-80E2-F5BC50C73A6A}"
+	ProjectSection(SolutionItems) = preProject
+		docs\ngrok.png = docs\ngrok.png
+		docs\webhook.png = docs\webhook.png
 	EndProjectSection
 EndProject
 Global
@@ -30,5 +37,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C110B907-9AC5-4373-80E2-F5BC50C73A6A} = {5C677A96-1F3F-4B4B-9604-EC275771FB99}
 	EndGlobalSection
 EndGlobal
