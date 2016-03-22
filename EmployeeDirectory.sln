@@ -17,7 +17,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{C110B907-9AC5-4373-80E2-F5BC50C73A6A}"
 	ProjectSection(SolutionItems) = preProject
 		docs\ngrok.png = docs\ngrok.png
+		docs\test.png = docs\test.png
 		docs\webhook.png = docs\webhook.png
+		docs\xml.png = docs\xml.png
 	EndProjectSection
 EndProject
 Global
