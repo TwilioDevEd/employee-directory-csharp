@@ -13,6 +13,8 @@ namespace EmployeeDirectory.Web.Models
         {
         }
 
+        public virtual DbSet<Employee> Employees { get; set; }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             // Use the correct initializer will be used based on the providerName
@@ -27,7 +29,5 @@ namespace EmployeeDirectory.Web.Models
                 Database.SetInitializer(new EmployeeDbSqlServerInitializer());
             }
         }
-
-        public virtual DbSet<Employee> Employees { get; set; }
     }
 }
