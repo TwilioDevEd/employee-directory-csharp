@@ -1,0 +1,164 @@
+.chapter(data-title='Employee Directory')
+  .step(data-title='What does this thing do?',data-file='EmployeeDirectory.Web/Models/Employee.cs')
+    :markdown
+      ## What does this thing do?
+      
+      This [ASP.NET](http://www.asp.net/mvc) application is an Employee Directory that can be used from any SMS client to find employee contact information. To build this app, we will need to:
+      
+      - Create an Employee model
+      - Receive an incoming SMS
+      - Search for an Employee by name
+      - Respond with an outgoing MMS
+      
+      Let's get started!
+
+      ---
+
+      **See Also:**
+      * [ASP.NET](http://www.asp.net/mvc)
+      * [Getting Started with ASP.NET MVC
+      5](http://www.asp.net/mvc/overview/getting-started/introduction/getting-started)
+
+  .step(data-title='Create an Employee model', data-file='EmployeeDirectory.Web/Models/Employee.cs')
+    :markdown
+      ## Create an Employee model
+    
+      The first thing we need is a database of employees. We will be using [Entity Framework (EF) Code First][ef6cf] for this. That means we can use a [POCO] (Plain Old CLR Object) to represent our employees.
+      
+      Our employee entity has a few fields for contact information, including their name, phone number, and a public URL containing an image of them.
+      
+      Now, let's build a service for finding employees.
+      
+      ---
+
+      **See Also:**
+      * [Entity Framework][ef6cf]
+
+      [ef6cf]: https://www.asp.net/mvc/overview/getting-started/getting-started-with-ef-using-mvc/creating-an-entity-framework-data-model-for-an-asp-net-mvc-application
+      [POCO]: https://en.wikipedia.org/wiki/Plain_Old_CLR_Object
+
+  .step(data-title='Search for an Employee by name',
+        data-file='EmployeeDirectory.Web/Services/EmployeeDirectoryService.cs',
+        data-highlight='9, 18-24, 26-30')
+    :markdown
+      ## Search for an Employee by name
+      
+      The `EmployeeDirectoryService` class allows us to search the database for employees either by name or by their unique database identifier. When searching by name, we'll return a list of employees whose name might match a search query, or just one if we find an exact match. If we know the ID of the employee we're looking for, we can return it right away.
+
+      We'll use this search functionality when responding to an SMS from a user, which we'll look at next.
+
+  .step(data-title='Receive an incoming SMS', data-file='EmployeeDirectory.Web/Controllers/EmployeeController.cs',
+        data-highlight='31-42')
+    :markdown
+      ## Receive an incoming SMS
+      
+      When your number receives an SMS message, [Twilio will send an HTTP POST request to our application][webhook]. This will be handled by the `Lookup` action in `EmployeeController`.
+      
+      We check for numeric input (more on that later) or perform a lookup for the desired employee. The results are packaged up as a [TwiML response][twiml] and sent back to Twilio and, in turn, the original sender of the SMS.
+      
+      Let's take a closer look at building the response.
+      
+      ---
+
+      **See Also:**
+      * [How Twilio Passes Data to Your Application][webhook]
+      * [TwiML: The Twilio Markup Language][twiml]
+      * [C# ?? operator]([null-coalesing])
+
+      [webhook]:  https://www.twilio.com/docs/api/twiml/sms/twilio_request
+      [twiml]: https://www.twilio.com/docs/api/twiml
+      [null-coalescing]: https://msdn.microsoft.com/en-us/library/ms173224.aspx
+
+  .step(data-title='Respond with a single match for an Employee name',
+        data-file='EmployeeDirectory.Web/Controllers/EmployeeController.cs',
+        data-highlight='87, 89, 92, 98-102')
+    :markdown
+      ## Respond with single match for an Employee name
+    
+      Let's say the service finds a single employee matching the text message. In this case, we simply write out a response that contains the employee's contact information, including a photo, making our response a MMS message.
+      
+      A single matching employee isn't the only scenario, however.
+      
+      ---
+
+      **See Also:**
+      * [Twilio Docs: <Message> Verb](https://www.twilio.com/docs/api/twiml/sms/message)
+
+  .step(data-title='What if no Employee or multiple employees match?',
+        data-file='EmployeeDirectory.Web/Controllers/EmployeeController.cs',
+        data-highlight='87, 92, 94-96, 104-106')
+    :markdown
+      ## What if no Employee or multiple employees match?
+    
+      If we don't find any employees, we can simply return a "Not found" message.
+      
+      What about multiple matches? For this case, we want to return a list of the matching employees' names along with an incrementing number the end user can use to make their selection. For example, if someone searched for "David" they might get something like:
+      
+      ```
+      We found: 1-David Prothero, 2-David Smith
+       - Reply with # of desired person
+      ```
+      
+      Let's see how we build that menu of choices next.
+
+  .step(data-title='Return a list of possible matches',
+        data-file='EmployeeDirectory.Web/Controllers/EmployeeController.cs',
+        data-highlight='112-137')
+    :markdown
+      ## Return a list of possible matches
+      
+      For the message text returned to the user, we build a numbered menu of possible matches.
+      
+      Our app needs to remember &mdash; between SMS messages from the user &mdash; the mapping of the 1, 2, 3 selection numbers to the actual unique ID's of employees. You will notice we are placing them in a cookie, which [Twilio will send back with every HTTP request to our application][twcookies].
+      
+      Now let's look at how to handle the user's response to this menu of choices.
+      
+      ---
+
+      **See Also:**
+      * [How do Twilio cookies work?][twcookies]
+      * [ASP.NET Cookies Overview](https://msdn.microsoft.com/en-us/library/ms178194.aspx)
+      
+      [twcookies]: https://www.twilio.com/help/faq/twilio-basics/how-do-twilio-cookies-work
+
+  .step(data-title='Return Employee contact information by number choice',
+        data-file='EmployeeDirectory.Web/Controllers/EmployeeController.cs',
+        data-highlight='31-55')
+    :markdown
+      ## Return Employee contact information by number choice
+    
+      When we receive an SMS message, we check whether:
+      
+      * The body of the text input is, in fact, a number.
+      * A cookie exists with the mapping of numbers to id's.
+      * The mappings contain the number sent to us by the user.
+      
+      If any of those checks fail, then we'll simply proceed with our typical name lookup.
+      
+      However, if those conditions are all met, we return a the single employee that matches their selection.
+      
+      Only thing left to do is celebrate.
+      
+      ![winning](tutorial/win.gif)
+      
+  .step(data-title='Where to next?', data-file='EmployeeDirectory.Web/Models/Employee.cs')
+    :markdown
+      ## Where to next?
+
+      [//]: # (TODO: Change the GitHub link from dprothero to TwilioDevEd)
+
+      Take a look at [the code on GitHub][gh] to run the application yourself. There you will find the complete Visual Studio solution and instructions for getting up and running.
+      
+      [gh]: https://github.com/dprothero/employee-directory-csharp
+      
+      If you're a C# developer working with Twilio, you might want to check out these other tutorials.
+
+      [**Two-Factor
+      Authentication**](https://www.twilio.com/docs/howto/walkthrough/two-factor-authentication/csharp/mvc)
+
+      [**Appointment
+      Reminders**](https://www.twilio.com/docs/howto/walkthrough/appointment-reminders/csharp/mvc)
+
+      ### Did this help?
+
+      Thanks for checking out this tutorial! If you have any feedback to share with us, we'd love to hear it. Tweet [@twilio](http://twitter.com/twilio) to let us know what you think.
