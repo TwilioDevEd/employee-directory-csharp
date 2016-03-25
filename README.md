@@ -4,9 +4,7 @@
 
 Use Twilio to accept SMS messages and turn them into queries against an SQL database. This example functions as an Employee Directory where a mobile phone user can send a text message with a partial string of the person's name and it will return their picture and contact information (Email address and Phone number).
 
-[//]: # (TODO: Change this to twilio.com)
-
-[Read the full tutorial here](http://www.prothero.com/employee-directory-csharp)
+[Read the full tutorial here](https://www.twilio.com/docs/tutorials/walkthrough/employee-directory/csharp/mvc)
 
 ## Trying it Out
 
