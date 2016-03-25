@@ -2,7 +2,7 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/github/TwilioDevEd/employee-directory-csharp?svg=true)](https://ci.appveyor.com/project/TwilioDevEd/employee-directory-csharp)
 
-Use Twilio to accept SMS messages and turn them into queries against an SQL database. This example functions as an Employee Directory where a mobile phone user can send a text message with a partial string of the person's name and it will return their picture and contact information (Email address and Phone number).
+Use Twilio to accept SMS messages and turn them into queries against a SQL database. This example functions as an Employee Directory where a mobile phone user can send a text message with a partial string of the person's name and it will return their picture and contact information (Email address and Phone number).
 
 [Read the full tutorial here](https://www.twilio.com/docs/tutorials/walkthrough/employee-directory/csharp/mvc)
 
