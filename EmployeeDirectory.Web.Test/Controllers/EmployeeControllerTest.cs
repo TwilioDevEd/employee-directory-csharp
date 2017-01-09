@@ -3,14 +3,17 @@ using EmployeeDirectory.Web.Services;
 using EmployeeDirectory.Web.Test.Fakes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Diagnostics;
-using System.Reflection;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
-using Twilio.Mvc;
-using Twilio.TwiML.Mvc;
+using Twilio;
+using Twilio.Clients;
+using Twilio.Http;
+using Twilio.Rest.Api.V2010.Account;
+using Twilio.Types;
 
 namespace EmployeeDirectory.Web.Test.Controllers
 {
@@ -31,10 +34,21 @@ namespace EmployeeDirectory.Web.Test.Controllers
         private async Task<string> GetXmlResultFromLookupAsync(string lookupString)
         {
             var ctrl = GetTestController();
-            var result = (await ctrl.Lookup(new SmsRequest { Body = lookupString })) as TwiMLResult;
+
+            var messageDict = new Dictionary<string, string> { { "body", lookupString } };
+            var responseMock = new Response(System.Net.HttpStatusCode.Created, JsonConvert.SerializeObject(messageDict));
+
+            var twilioClientMock = new Mock<ITwilioRestClient>();
+            twilioClientMock.Setup(c => c.AccountSid).Returns("AccountSID");
+            twilioClientMock.Setup(c => c.Request(It.IsAny<Request>()))
+                                         .Returns(responseMock);
+            TwilioClient.SetRestClient(twilioClientMock.Object);
+
+            var message = MessageResource.Create(to: new PhoneNumber("fakenumber"), body: lookupString);
+            var result = (await ctrl.Lookup(message)) as ContentResult;
             Assert.IsNotNull(result);
 
-            return GetXmlFromTwiMLResult(result);
+            return result.Content;
         }
 
         private EmployeeController GetTestController()
@@ -51,14 +65,6 @@ namespace EmployeeDirectory.Web.Test.Controllers
             var ctrl = new EmployeeController(new EmployeeDirectoryService(TestEmployeeDbContext.GetTestDbContext()));
             ctrl.ControllerContext = new ControllerContext(httpContext.Object, new RouteData(), ctrl);
             return ctrl;
-        }
-
-        private string GetXmlFromTwiMLResult(TwiMLResult result)
-        {
-            var field = typeof(TwiMLResult).GetField("data", BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.Instance);
-            var xml = field.GetValue(result).ToString();
-            Trace.WriteLine(xml);
-            return xml;
         }
 
         [TestMethod]
