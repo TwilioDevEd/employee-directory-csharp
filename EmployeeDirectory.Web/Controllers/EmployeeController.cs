@@ -6,9 +6,8 @@ using System.Web;
 using System.Web.Mvc;
 using EmployeeDirectory.Web.Models;
 using EmployeeDirectory.Web.Services;
-using Twilio.Mvc;
 using Twilio.TwiML;
-using Twilio.TwiML.Mvc;
+using Twilio.Rest.Api.V2010.Account;
 
 namespace EmployeeDirectory.Web.Controllers
 {
@@ -30,7 +29,7 @@ namespace EmployeeDirectory.Web.Controllers
 
         // Twilio will call this whenever our phone # receives an SMS message.
         [HttpPost]
-        public async Task<ActionResult> Lookup(SmsRequest request)
+        public async Task<ActionResult> Lookup(MessageResource request)
         {
             var incomingMessageText = request.Body;
 
@@ -38,7 +37,7 @@ namespace EmployeeDirectory.Web.Controllers
                             await _service.FindByNamePartialAsync(incomingMessageText);
 
             var response = GetTwilioResponseForEmployees(employees, incomingMessageText);
-            return new TwiMLResult(response);
+            return Content(response.ToString(), "application/xml");
         }
 
         private async Task<IEnumerable<Employee>> GetEmployeesIfNumericInput(string incomingMessageText)
@@ -84,9 +83,9 @@ namespace EmployeeDirectory.Web.Controllers
             return new [] { employee };
         }
 
-        private TwilioResponse GetTwilioResponseForEmployees(IEnumerable<Employee> employees, string incomingMessageText)
+        private MessagingResponse GetTwilioResponseForEmployees(IEnumerable<Employee> employees, string incomingMessageText)
         {
-            var response = new TwilioResponse();
+            var response = new MessagingResponse();
             var employeeList = employees.ToList();
 
             switch (employeeList.Count)
@@ -97,8 +96,12 @@ namespace EmployeeDirectory.Web.Controllers
 
                 case 1: // A Single Employee Found
                     var employee = employeeList.First();
-                    response.Message(employee.FullName + " - " + employee.Email + " - " + employee.PhoneNumber,
-                        new[] {employee.ImageUrl}, null);
+                    response.Message(
+                        new Message().Body(
+                            employee.FullName + " - " + 
+                            employee.Email + " - " + 
+                            employee.PhoneNumber)
+                            .Media(employee.ImageUrl));
                     break;
 
                 default: // Multiple Employees Found
