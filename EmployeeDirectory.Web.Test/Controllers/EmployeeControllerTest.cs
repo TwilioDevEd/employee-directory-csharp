@@ -1,4 +1,5 @@
-﻿using EmployeeDirectory.Web.Controllers;
+﻿using System;
+using EmployeeDirectory.Web.Controllers;
 using EmployeeDirectory.Web.Services;
 using EmployeeDirectory.Web.Test.Fakes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -10,6 +11,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
 using Twilio;
+using Twilio.AspNet.Mvc;
 using Twilio.Clients;
 using Twilio.Http;
 using Twilio.Rest.Api.V2010.Account;
@@ -45,10 +47,10 @@ namespace EmployeeDirectory.Web.Test.Controllers
             TwilioClient.SetRestClient(twilioClientMock.Object);
 
             var message = MessageResource.Create(to: new PhoneNumber("fakenumber"), body: lookupString);
-            var result = (await ctrl.Lookup(message)) as ContentResult;
+            var result = (await ctrl.Lookup(message)) as TwiMLResult;
             Assert.IsNotNull(result);
 
-            return result.Content;
+            return result.Data.ToString();
         }
 
         private EmployeeController GetTestController()
