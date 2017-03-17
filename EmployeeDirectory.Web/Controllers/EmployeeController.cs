@@ -6,12 +6,13 @@ using System.Web;
 using System.Web.Mvc;
 using EmployeeDirectory.Web.Models;
 using EmployeeDirectory.Web.Services;
+using Twilio.AspNet.Mvc;
 using Twilio.TwiML;
 using Twilio.Rest.Api.V2010.Account;
 
 namespace EmployeeDirectory.Web.Controllers
 {
-    public class EmployeeController : Controller
+    public class EmployeeController : TwilioController
     {
         public const string NotFoundMessage = "We could not find an employee matching '{0}'";
         public const string CookieName = "EmpDirIdList";
@@ -29,7 +30,7 @@ namespace EmployeeDirectory.Web.Controllers
 
         // Twilio will call this whenever our phone # receives an SMS message.
         [HttpPost]
-        public async Task<ActionResult> Lookup(MessageResource request)
+        public async Task<TwiMLResult> Lookup(MessageResource request)
         {
             var incomingMessageText = request.Body;
 
@@ -37,7 +38,7 @@ namespace EmployeeDirectory.Web.Controllers
                             await _service.FindByNamePartialAsync(incomingMessageText);
 
             var response = GetTwilioResponseForEmployees(employees, incomingMessageText);
-            return Content(response.ToString(), "application/xml");
+            return TwiML(response);
         }
 
         private async Task<IEnumerable<Employee>> GetEmployeesIfNumericInput(string incomingMessageText)
