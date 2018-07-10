@@ -6,9 +6,9 @@ using System.Web;
 using System.Web.Mvc;
 using EmployeeDirectory.Web.Models;
 using EmployeeDirectory.Web.Services;
+using Twilio.AspNet.Common;
 using Twilio.AspNet.Mvc;
 using Twilio.TwiML;
-using Twilio.Rest.Api.V2010.Account;
 
 namespace EmployeeDirectory.Web.Controllers
 {
@@ -30,7 +30,7 @@ namespace EmployeeDirectory.Web.Controllers
 
         // Twilio will call this whenever our phone # receives an SMS message.
         [HttpPost]
-        public async Task<TwiMLResult> Lookup(MessageResource request)
+        public async Task<TwiMLResult> Lookup(SmsRequest request)
         {
             var incomingMessageText = request.Body;
 
