@@ -4,7 +4,7 @@
 
 # SMS/MMS Employee Directory on ASP.NET MVC
 
-[![Build status](https://ci.appveyor.com/api/projects/status/github/TwilioDevEd/employee-directory-csharp?svg=true)](https://ci.appveyor.com/project/TwilioDevEd/employee-directory-csharp)
+![](https://github.com/TwilioDevEd/employee-directory-csharp/workflows/NetFx/badge.svg)
 
 Use Twilio to accept SMS messages and turn them into queries against a SQL database. This example functions as an Employee Directory where a mobile phone user can send a text message with a partial string of the person's name and it will return their picture and contact information (Email address and Phone number).
 
