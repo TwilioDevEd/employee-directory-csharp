@@ -1,0 +1,33 @@
+name: NetFx
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout Code
+
+    - name: Setup MSBuild Path
+      uses: microsoft/setup-msbuild@v1
+
+    - name: Setup VSTest Path
+      uses: darenm/Setup-VSTest@v1
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1
+
+    - name: Restore NuGet Packages
+      run: nuget restore EmployeeDirectory.sln
+
+    - name: Build Web App
+      run: msbuild EmployeeDirectory.sln /verbosity:minimal
+
+    - name: Run Tests with VSTest
+      run: vstest.console.exe /Platform:x64 .\EmployeeDirectory.Web.Test\bin\Debug\EmployeeDirectory.Web.Test.dll
