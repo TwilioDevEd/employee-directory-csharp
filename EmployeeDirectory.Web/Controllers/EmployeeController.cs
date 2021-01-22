@@ -9,6 +9,7 @@ using EmployeeDirectory.Web.Services;
 using Twilio.AspNet.Common;
 using Twilio.AspNet.Mvc;
 using Twilio.TwiML;
+using Twilio.TwiML.Messaging;
 
 namespace EmployeeDirectory.Web.Controllers
 {
@@ -97,12 +98,12 @@ namespace EmployeeDirectory.Web.Controllers
 
                 case 1: // A Single Employee Found
                     var employee = employeeList.First();
-                    response.Message(
+                    response.Append(
                         new Message().Body(
                             employee.FullName + " - " + 
                             employee.Email + " - " + 
                             employee.PhoneNumber)
-                            .Media(employee.ImageUrl));
+                            .Media(new System.Uri(employee.ImageUrl)));
                     break;
 
                 default: // Multiple Employees Found
